@@ -8,6 +8,7 @@ const TRADUCCIONES: [RegExp, string][] = [
   [/email not confirmed/i, 'Tienes que confirmar tu email: revisa tu bandeja de entrada.'],
   [/already registered/i, 'Ya existe una cuenta con ese email. Prueba a entrar.'],
   [/password should be at least/i, 'La contraseña debe tener al menos 6 caracteres.'],
+  [/signups? not allowed|signup_disabled/i, 'El registro de cuentas nuevas está cerrado.'],
   [/rate limit/i, 'Demasiados intentos. Espera un momento y vuelve a probar.'],
   [/fetch/i, 'No hay conexión con el servidor.'],
 ]
