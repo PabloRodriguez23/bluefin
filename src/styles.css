@@ -524,3 +524,19 @@ dialog .sheet-body { padding: 20px 22px 22px; overflow-y: auto; }
 .tile-desglose { font-size: .76rem; color: var(--muted); margin-top: 6px; line-height: 1.35; }
 .tile-alerta { border-color: color-mix(in srgb, #d03b3b 45%, transparent); }
 .tile-alerta .tile-value { color: var(--bad); }
+
+/* ===== Demo ===== */
+.demo-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 16px; padding: 12px 16px; border-radius: var(--radius);
+  background: var(--primary-soft); border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+  font-size: .9rem;
+}
+.login-sep { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .82rem; margin: 6px 0 12px; }
+.login-sep::before, .login-sep::after { content: ""; flex: 1; height: 1px; background: var(--grid); }
+.login-demo { width: 100%; }
+.login-card .login-demo + .small { margin-top: 8px; }
+fieldset.campos { border: 0; margin: 0; padding: 0; min-width: 0; }
+fieldset.campos:disabled input, fieldset.campos:disabled .chip, fieldset.campos:disabled .seg button { cursor: default; }
+fieldset.campos:disabled input { opacity: 1; color: var(--text); }
+.solo-lectura { margin: 20px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); color: var(--text-2); font-size: .88rem; text-align: center; }

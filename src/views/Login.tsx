@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
+import { useDemo } from '../store/useDemo'
 
 type Modo = 'entrar' | 'registro'
 
@@ -22,6 +23,7 @@ export function Login() {
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
   const [aviso, setAviso] = useState('')
+  const entrarDemo = useDemo((s) => s.entrar)
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault()
@@ -98,6 +100,12 @@ export function Login() {
         >
           {modo === 'entrar' ? '¿No tienes cuenta? Crea una' : '¿Ya tienes cuenta? Entra'}
         </button>
+
+        <div className="login-sep"><span>o</span></div>
+        <button type="button" className="btn btn-big login-demo" onClick={entrarDemo}>
+          Ver demo sin cuenta
+        </button>
+        <p className="muted small">Datos ficticios y de solo lectura.</p>
       </form>
     </div>
   )

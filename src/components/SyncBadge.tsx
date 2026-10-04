@@ -6,6 +6,7 @@ const TEXTO: Record<EstadoSync, string> = {
   ok: 'Sincronizado',
   offline: 'Sin conexión',
   error: 'Error al sincronizar',
+  demo: 'Demo · datos ficticios',
 }
 
 export function SyncBadge() {

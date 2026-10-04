@@ -11,6 +11,7 @@ import { MesesChart } from '../components/charts/MesesChart'
 import { TxItem } from '../components/TxItem'
 import { saldoReal, useBancos } from '../lib/banco'
 import { currentMonth } from '../lib/dates'
+import { supabase } from '../lib/supabase'
 
 const hora = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 
@@ -56,7 +57,8 @@ export function Resumen({ month, modo, onMonth, onEdit, onVerTodos, onAdd }: Pro
         </p>
         <div className="btn-row center">
           <button className="btn btn-primary" onClick={onAdd}>＋ Añadir mi primer gasto</button>
-          <button className="btn" onClick={cargarDemo}>✨ Ver con datos de ejemplo</button>
+          {/* Con cuenta, los datos de ejemplo se subirían a la nube: para eso está la demo del login */}
+          {!supabase && <button className="btn" onClick={cargarDemo}>✨ Ver con datos de ejemplo</button>}
         </div>
       </div>
     )

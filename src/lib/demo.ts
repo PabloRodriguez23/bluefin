@@ -1,4 +1,5 @@
 import type { DatosFinanzas, Fijo, Movimiento } from '../types'
+import type { ConexionBanco } from './banco'
 import { DEFAULT_CATEGORIAS } from './categories'
 import { addMonths, currentMonth, dateInMonth, monthRange, today } from './dates'
 import { uid } from './format'
@@ -26,7 +27,7 @@ export function crearDemo(): DatosFinanzas {
   const hoy = today()
 
   const fijos: Fijo[] = [
-    { tipo: 'ingreso', nombre: 'Nómina', importe: 1850, categoriaId: 'nomina', dia: 28 },
+    { tipo: 'ingreso', nombre: 'Nómina', importe: 1850, categoriaId: 'nomina', dia: 1 },
     { tipo: 'gasto', nombre: 'Alquiler', importe: 650, categoriaId: 'vivienda', dia: 1 },
     { tipo: 'gasto', nombre: 'Luz y agua', importe: 68, categoriaId: 'facturas', dia: 5 },
     { tipo: 'gasto', nombre: 'Internet y móvil', importe: 42, categoriaId: 'facturas', dia: 10 },
@@ -65,8 +66,24 @@ export function crearDemo(): DatosFinanzas {
           categoriaId,
           asunto: asuntos[Math.floor(r() * asuntos.length)],
           fecha,
+          // Como si viniera del banco conectado
+          origen: 'banco',
         })
       }
+    }
+    // Paso de dinero a otra cuenta propia: no cuenta como gasto
+    const fechaTraspaso = dateInMonth(mes, 2)
+    if (fechaTraspaso <= hoy) {
+      movimientos.push({
+        id: uid(),
+        clase: 'traspaso',
+        sentido: 'salida',
+        importe: 200,
+        categoriaId: 'traspaso',
+        asunto: 'Transferencia a mi otra cuenta',
+        fecha: fechaTraspaso,
+        origen: 'banco',
+      })
     }
     if (r() > 0.6) {
       movimientos.push({
@@ -81,4 +98,22 @@ export function crearDemo(): DatosFinanzas {
   }
 
   return { movimientos, fijos, categorias: DEFAULT_CATEGORIAS, colchon: 250 }
+}
+
+/** Banco ficticio de la demo, con saldo y una autorización vigente. */
+export function bancosDemo(): ConexionBanco[] {
+  const ahora = new Date()
+  return [
+    {
+      id: 'demo',
+      banco: 'Banco Demo',
+      pais: 'ES',
+      logo: null,
+      cuentas: [{ uid: 'demo', nombre: 'Cuenta corriente', saldo: 1245.6, moneda: 'EUR', saldo_fecha: ahora.toISOString() }],
+      valido_hasta: new Date(ahora.getTime() + 142 * 86_400_000).toISOString(),
+      ultima_sync: new Date(ahora.getTime() - 40 * 60_000).toISOString(),
+      error: null,
+      created_at: new Date(ahora.getTime() - 38 * 86_400_000).toISOString(),
+    },
+  ]
 }

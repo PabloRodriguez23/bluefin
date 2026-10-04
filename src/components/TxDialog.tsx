@@ -15,12 +15,14 @@ interface Props {
   mov: Movimiento | null
   month: string
   onClose: () => void
+  /** Demo: se puede ver el detalle, pero no guardar ni borrar. */
+  soloLectura?: boolean
 }
 
-export function TxDialog({ open, mov, month, onClose }: Props) {
+export function TxDialog({ open, mov, month, onClose, soloLectura = false }: Props) {
   return (
-    <Sheet open={open} title={mov ? 'Editar movimiento' : 'Nuevo movimiento'} onClose={onClose}>
-      <TxForm mov={mov} month={month} onDone={onClose} />
+    <Sheet open={open} title={soloLectura ? 'Detalle del movimiento' : mov ? 'Editar movimiento' : 'Nuevo movimiento'} onClose={onClose}>
+      <TxForm mov={mov} month={month} onDone={onClose} soloLectura={soloLectura} />
     </Sheet>
   )
 }
@@ -34,7 +36,7 @@ const CLASES: { value: Clase; label: string }[] = [
 
 type Sentido = 'entrada' | 'salida'
 
-function TxForm({ mov, month, onDone }: { mov: Movimiento | null; month: string; onDone: () => void }) {
+function TxForm({ mov, month, onDone, soloLectura }: { mov: Movimiento | null; month: string; onDone: () => void; soloLectura: boolean }) {
   const { addMovimiento, updateMovimiento, deleteMovimiento, addFijo } = useFinanzas()
   const movimientos = useFinanzas((s) => s.movimientos)
 
@@ -157,6 +159,7 @@ function TxForm({ mov, month, onDone }: { mov: Movimiento | null; month: string;
 
   return (
     <form onSubmit={guardar}>
+      <fieldset className="campos" disabled={soloLectura}>
       {mov?.origen === 'banco' && (
         <p className="origen-banco">
           🏦 Importado del banco{mov.comercio ? <>: <strong>{mov.comercio}</strong></> : null}
@@ -234,16 +237,22 @@ function TxForm({ mov, month, onDone }: { mov: Movimiento | null; month: string;
         )}
       </div>
 
-      <div className="sheet-actions">
-        {mov && (
-          <button type="button" className="btn btn-danger" onClick={eliminar}>
-            Eliminar
+      </fieldset>
+
+      {soloLectura ? (
+        <p className="solo-lectura">Demo de solo lectura: no se pueden guardar cambios.</p>
+      ) : (
+        <div className="sheet-actions">
+          {mov && (
+            <button type="button" className="btn btn-danger" onClick={eliminar}>
+              Eliminar
+            </button>
+          )}
+          <button type="submit" className="btn btn-primary btn-big">
+            Guardar
           </button>
-        )}
-        <button type="submit" className="btn btn-primary btn-big">
-          Guardar
-        </button>
-      </div>
+        </div>
+      )}
     </form>
   )
 }

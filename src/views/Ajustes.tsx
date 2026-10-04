@@ -147,12 +147,6 @@ export function Ajustes({ modo, email }: { modo: ModoColor; email?: string }) {
         </div>
         <div className="btn-row">
           <button
-            className="btn btn-ghost"
-            onClick={() => (!s.movimientos.length || confirm('Se reemplazarán tus datos por datos de ejemplo. ¿Seguro?')) && s.cargarDemo()}
-          >
-            ✨ Cargar datos de ejemplo
-          </button>
-          <button
             className="btn btn-danger"
             onClick={() => confirm('¿Borrar TODOS los datos? No se puede deshacer.') && (s.borrarTodo(), toast('Datos borrados'))}
           >

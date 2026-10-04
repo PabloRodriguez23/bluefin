@@ -12,17 +12,19 @@ interface Props {
   open: boolean
   fijo: Fijo | null
   onClose: () => void
+  /** Demo: se puede ver el detalle, pero no guardar ni borrar. */
+  soloLectura?: boolean
 }
 
-export function FijoDialog({ open, fijo, onClose }: Props) {
+export function FijoDialog({ open, fijo, onClose, soloLectura = false }: Props) {
   return (
-    <Sheet open={open} title={fijo ? 'Editar fijo' : 'Nuevo fijo'} onClose={onClose}>
-      <FijoForm fijo={fijo} onDone={onClose} />
+    <Sheet open={open} title={soloLectura ? 'Detalle del fijo' : fijo ? 'Editar fijo' : 'Nuevo fijo'} onClose={onClose}>
+      <FijoForm fijo={fijo} onDone={onClose} soloLectura={soloLectura} />
     </Sheet>
   )
 }
 
-function FijoForm({ fijo, onDone }: { fijo: Fijo | null; onDone: () => void }) {
+function FijoForm({ fijo, onDone, soloLectura }: { fijo: Fijo | null; onDone: () => void; soloLectura: boolean }) {
   const { addFijo, updateFijo, deleteFijo } = useFinanzas()
   const [tipo, setTipo] = useState<TipoCategoria>(fijo?.tipo ?? 'gasto')
   const [importe, setImporte] = useState(fijo ? amountToInput(fijo.importe) : '')
@@ -62,6 +64,7 @@ function FijoForm({ fijo, onDone }: { fijo: Fijo | null; onDone: () => void }) {
 
   return (
     <form onSubmit={guardar}>
+      <fieldset className="campos" disabled={soloLectura}>
       <Segmented
         value={tipo}
         onChange={cambiarTipo}
@@ -118,16 +121,22 @@ function FijoForm({ fijo, onDone }: { fijo: Fijo | null; onDone: () => void }) {
         <span>Activo (se añade solo cada mes)</span>
       </label>
 
-      <div className="sheet-actions">
-        {fijo && (
-          <button type="button" className="btn btn-danger" onClick={eliminar}>
-            Eliminar
+      </fieldset>
+
+      {soloLectura ? (
+        <p className="solo-lectura">Demo de solo lectura: no se pueden guardar cambios.</p>
+      ) : (
+        <div className="sheet-actions">
+          {fijo && (
+            <button type="button" className="btn btn-danger" onClick={eliminar}>
+              Eliminar
+            </button>
+          )}
+          <button type="submit" className="btn btn-primary btn-big">
+            Guardar
           </button>
-        )}
-        <button type="submit" className="btn btn-primary btn-big">
-          Guardar
-        </button>
-      </div>
+        </div>
+      )}
     </form>
   )
 }

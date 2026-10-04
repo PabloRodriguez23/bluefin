@@ -1,5 +1,7 @@
 # Bluefin
 
+**[Ver la demo](https://pablorodriguez23.github.io/bluefin/?demo)**: sin cuenta, con datos ficticios y de solo lectura.
+
 Aplicación web progresiva (PWA) para controlar las finanzas personales: gastos fijos, gastos variables e ingresos, con gráficas claras y una interfaz pensada para apuntar un gasto en segundos. Se puede instalar en el móvil y en el ordenador y funciona sin conexión.
 
 ## Funcionalidades
@@ -19,6 +21,7 @@ Aplicación web progresiva (PWA) para controlar las finanzas personales: gastos 
 - **Copia de seguridad**: exportar e importar en JSON y exportar a CSV para abrirlo en Excel.
 - **Sincronización entre dispositivos** en tiempo real con cuenta de usuario (Supabase). Funciona sin conexión: los cambios se guardan en una cola y se suben al recuperar internet.
 - **Importación automática del banco** (Open Banking PSD2 vía Enable Banking): los movimientos de tus cuentas y tarjetas se importan cada 6 horas, se categorizan solos (reglas aprendidas, más de 150 comercios españoles y códigos MCC) y se concilian con tus gastos fijos para no duplicarlos.
+- **Modo demo** de solo lectura, aislado de los datos reales, para probar la app sin registrarse.
 - **Seguridad**: Row Level Security en PostgreSQL, así cada usuario solo puede leer y modificar sus propios datos.
 
 ## Tecnologías

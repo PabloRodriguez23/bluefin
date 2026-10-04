@@ -23,7 +23,7 @@ interface Op {
   row: Row | null
 }
 
-export type EstadoSync = 'local' | 'sincronizando' | 'ok' | 'offline' | 'error'
+export type EstadoSync = 'local' | 'sincronizando' | 'ok' | 'offline' | 'error' | 'demo'
 
 export const useSync = create<{ estado: EstadoSync; pendientes: number }>(() => ({
   estado: supabase ? 'sincronizando' : 'local',

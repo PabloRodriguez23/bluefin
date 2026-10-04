@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from './supabase'
+import { useDemo } from '../store/useDemo'
+import { bancosDemo } from './demo'
 
 export interface BancoDisponible {
   nombre: string
@@ -94,6 +96,8 @@ export function estadoConexion(c: ConexionBanco): EstadoConexion {
 /** Conexiones bancarias del usuario, actualizadas en tiempo real. */
 export function useBancos(activo = true) {
   const [conexiones, setConexiones] = useState<ConexionBanco[] | null>(null)
+  const demo = useDemo((s) => s.activo)
+  const [ficticias] = useState(bancosDemo)
 
   const cargar = useCallback(async () => {
     if (!supabase) return
@@ -102,7 +106,7 @@ export function useBancos(activo = true) {
   }, [])
 
   useEffect(() => {
-    if (!supabase || !activo) return
+    if (!supabase || !activo || demo) return
     void cargar()
     // Nombre único: varios componentes pueden usar este hook a la vez
     const canal = supabase
@@ -110,7 +114,7 @@ export function useBancos(activo = true) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bancos' }, () => void cargar())
       .subscribe()
     return () => void supabase?.removeChannel(canal)
-  }, [activo, cargar])
+  }, [activo, cargar, demo])
 
-  return { conexiones, recargar: cargar }
+  return { conexiones: demo ? ficticias : conexiones, recargar: cargar }
 }
