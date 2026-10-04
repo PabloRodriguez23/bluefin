@@ -1,5 +1,4 @@
 import type { Categoria, Movimiento } from '../types'
-import { AHORRO } from './categories'
 import { addMonths, daysInMonth, monthOf, shortMonthLabel, today } from './dates'
 
 export interface ResumenMes {
@@ -8,8 +7,6 @@ export interface ResumenMes {
   fijos: number
   variables: number
   balance: number
-  /** Neto enviado a la cuenta de ahorro (negativo si se sacó dinero). */
-  apartado: number
   /** Movimientos con fecha futura (p. ej. fijos que aún no han llegado): no cuentan en los totales. */
   previstoIngresos: number
   previstoGastos: number
@@ -25,7 +22,6 @@ export function resumenMes(movs: Movimiento[], month: string, hoy = today()): Re
   let ingresos = 0
   let fijos = 0
   let variables = 0
-  let apartado = 0
   let previstoIngresos = 0
   let previstoGastos = 0
   for (const m of movs) {
@@ -35,14 +31,13 @@ export function resumenMes(movs: Movimiento[], month: string, hoy = today()): Re
       else if (m.clase !== 'traspaso') previstoGastos += m.importe
       continue
     }
-    if (m.clase === 'traspaso') {
-      if (m.categoriaId === AHORRO) apartado += m.sentido === 'entrada' ? -m.importe : m.importe
-    } else if (m.clase === 'ingreso') ingresos += m.importe
+    if (m.clase === 'traspaso') continue
+    if (m.clase === 'ingreso') ingresos += m.importe
     else if (m.clase === 'fijo') fijos += m.importe
     else variables += m.importe
   }
   const gastos = fijos + variables
-  return { ingresos: r2(ingresos), fijos: r2(fijos), variables: r2(variables), gastos: r2(gastos), balance: r2(ingresos - gastos), apartado: r2(apartado), previstoIngresos: r2(previstoIngresos), previstoGastos: r2(previstoGastos) }
+  return { ingresos: r2(ingresos), fijos: r2(fijos), variables: r2(variables), gastos: r2(gastos), balance: r2(ingresos - gastos), previstoIngresos: r2(previstoIngresos), previstoGastos: r2(previstoGastos) }
 }
 
 export interface PorCategoria {

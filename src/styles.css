@@ -486,7 +486,6 @@ dialog .sheet-body { padding: 20px 22px 22px; overflow-y: auto; }
 .origen-banco { background: var(--primary-soft); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; font-size: .88rem; word-break: break-word; }
 .pais-select { flex: 0 0 auto; max-width: 46%; padding: 11px 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-2); }
 .tx-amt.neutral { color: var(--muted); }
-.hero-ahorro { margin-top: 8px; background: rgba(255,255,255,.16); display: inline-block; padding: 4px 12px; border-radius: 99px; }
 
 /* ===== Avisos de caducidad del banco ===== */
 .avisos-banco { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
@@ -518,6 +517,5 @@ dialog .sheet-body { padding: 20px 22px 22px; overflow-y: auto; }
 .hero-cuentas { opacity: .85; font-size: .85rem; margin-bottom: 6px; }
 .hero-nota { opacity: .75; font-size: .82rem; }
 .hero-previsto { margin-top: 6px; font-size: .88rem; }
-.hero-previsto + .hero-ahorro, .hero-sub + .hero-ahorro { display: inline-block; }
 .badge-previsto { background: color-mix(in srgb, #fab219 22%, transparent) !important; color: #8a5a00 !important; }
 :root[data-theme="dark"] .badge-previsto { color: #fab219 !important; }

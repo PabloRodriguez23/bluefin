@@ -62,7 +62,8 @@ export function Resumen({ month, modo, onMonth, onEdit, onVerTodos, onAdd }: Pro
     )
   }
 
-  const ahorro = r.ingresos > 0 ? r.balance / r.ingresos : null
+  // Solo se avisa si se gasta más de lo que entra; no se habla de ahorro
+  const exceso = r.ingresos > 0 && r.balance < 0 ? -r.balance / r.ingresos : null
   const usoPresupuesto = presupuesto ? r.variables / presupuesto : 0
 
   return (
@@ -88,23 +89,12 @@ export function Resumen({ month, modo, onMonth, onEdit, onVerTodos, onAdd }: Pro
               <div className="hero-sub hero-nota">Ingresos menos gastos{esMesActual ? ' hasta hoy' : ''}</div>
             </>
           )}
-          <div className="hero-sub">
-            {ahorro === null
-              ? 'Sin ingresos registrados este mes'
-              : ahorro >= 0
-                ? `Estás ahorrando el ${pct(ahorro)} de tus ingresos 🎉`
-                : `Has gastado un ${pct(-ahorro)} más de lo que ingresaste`}
-          </div>
+          {exceso !== null && <div className="hero-sub">Has gastado un {pct(exceso)} más de lo que ingresaste</div>}
           {(r.previstoIngresos > 0 || r.previstoGastos > 0) && (
             <div className="hero-sub hero-previsto">
               📅 Previsto hasta fin de mes:
               {r.previstoIngresos > 0 && <> +{money(r.previstoIngresos)}</>}
               {r.previstoGastos > 0 && <> −{money(r.previstoGastos)}</>}
-            </div>
-          )}
-          {r.apartado !== 0 && (
-            <div className="hero-sub hero-ahorro">
-              🐷 {r.apartado > 0 ? `Has apartado ${money(r.apartado)} a tu ahorro` : `Has sacado ${money(-r.apartado)} de tu ahorro`}
             </div>
           )}
         </div>
