@@ -13,7 +13,7 @@
  */
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { importPKCS8, SignJWT } from 'npm:jose@5'
-import { createPrivateKey } from 'node:crypto'
+import { createPrivateKey, timingSafeEqual } from 'node:crypto'
 import { categorizar, detectarTraspaso, normalizar, type Regla } from './categorizar.ts'
 
 const EB = 'https://api.enablebanking.com'
@@ -25,6 +25,34 @@ const CALLBACK = `${SUPABASE_URL}/functions/v1/banco/callback`
 const DIA = 86_400_000
 
 const db = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } })
+
+/** Validez del enlace de autorización: pasado este tiempo el "state" ya no sirve. */
+const STATE_TTL_MS = 30 * 60_000
+
+/**
+ * Orígenes a los que se puede volver tras autorizar en el banco (evita redirecciones abiertas).
+ * APP_ORIGINS="https://usuario.github.io,..." · localhost y la red local siempre se permiten (desarrollo).
+ */
+function origenPermitido(url: string): boolean {
+  try {
+    const u = new URL(url)
+    if (!/^https?:$/.test(u.protocol)) return false
+    if (/^(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)$/.test(u.hostname)) return true
+    const permitidos = (Deno.env.get('APP_ORIGINS') ?? '').split(',').map((o) => o.trim()).filter(Boolean)
+    return permitidos.includes(u.origin)
+  } catch {
+    return false
+  }
+}
+
+/** Comparación en tiempo constante para el secreto del cron. */
+function secretoValido(recibido: string | null): boolean {
+  const esperado = Deno.env.get('CRON_SECRET') ?? ''
+  if (!recibido || !esperado) return false
+  const a = new TextEncoder().encode(recibido)
+  const b = new TextEncoder().encode(esperado)
+  return a.length === b.length && timingSafeEqual(a, b)
+}
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -305,9 +333,15 @@ Deno.serve(async (req) => {
     // --- Vuelta desde el banco (sin sesión de usuario: la identifica el "state") ---
     if (ruta === '/callback') {
       const state = url.searchParams.get('state')
+      if (!state || !/^[0-9a-f-]{36}$/i.test(state)) return new Response('Enlace no válido.', { status: 400 })
       const { data: auth } = await db.from('bancos_auth').select('*').eq('state', state).maybeSingle()
       if (!auth) return new Response('Enlace caducado. Vuelve a la app e inténtalo de nuevo.', { status: 400 })
+      // Un solo uso, y además limpiamos los que se quedaron a medias
       await db.from('bancos_auth').delete().eq('state', auth.state)
+      await db.from('bancos_auth').delete().lt('created_at', new Date(Date.now() - STATE_TTL_MS).toISOString())
+      if (Date.now() - new Date(auth.created_at).getTime() > STATE_TTL_MS || !origenPermitido(auth.volver_a)) {
+        return new Response('Enlace caducado. Vuelve a la app e inténtalo de nuevo.', { status: 400 })
+      }
       const volver = new URL(auth.volver_a)
 
       const code = url.searchParams.get('code')
@@ -344,7 +378,7 @@ Deno.serve(async (req) => {
 
     // --- Tarea programada ---
     if (ruta === '/cron') {
-      if (req.headers.get('x-cron-secret') !== Deno.env.get('CRON_SECRET')) return json({ error: 'No autorizado' }, 401)
+      if (!secretoValido(req.headers.get('x-cron-secret'))) return json({ error: 'No autorizado' }, 401)
       const { data } = await db.from('bancos').select('*').gt('valido_hasta', new Date().toISOString())
       const resultados = []
       for (const c of (data ?? []) as Conexion[]) resultados.push(await sincronizarYGuardar(c))
@@ -365,7 +399,8 @@ Deno.serve(async (req) => {
 
     if (ruta === '/conectar') {
       const { banco, pais = 'ES', volver_a } = body as { banco: string; pais?: string; volver_a: string }
-      if (!banco || !/^https?:\/\//.test(volver_a ?? '')) return json({ error: 'Faltan datos' }, 400)
+      if (!banco || typeof banco !== 'string') return json({ error: 'Faltan datos' }, 400)
+      if (!origenPermitido(volver_a ?? '')) return json({ error: 'Dirección de vuelta no permitida' }, 400)
       const aspsp = (await listarBancos(pais)).find((b) => b.name === banco)
       if (!aspsp) return json({ error: 'Banco no encontrado' }, 404)
       const segundos = Math.min(aspsp.maximum_consent_validity ?? 180 * 86400, 180 * 86400)
@@ -418,7 +453,8 @@ Deno.serve(async (req) => {
     return json({ error: 'Ruta no encontrada' }, 404)
   } catch (e) {
     console.error('[banco]', e)
-    return json({ error: e instanceof Error ? e.message : String(e) }, 500)
+    // El detalle se queda en los logs del servidor; al cliente, un mensaje genérico
+    return json({ error: 'Error interno. Inténtalo de nuevo en unos minutos.' }, 500)
   }
 })
 

@@ -16,16 +16,23 @@ export function exportarJSON(d: DatosFinanzas) {
 
 const CLASE = { fijo: 'Gasto fijo', variable: 'Gasto variable', ingreso: 'Ingreso', traspaso: 'Traspaso' } as const
 
+/** Excel ejecuta como fórmula un texto que empiece por = + - @ (o tabulador): se neutraliza con una comilla. */
+const FORMULA = /^[=+\-@\t\r]/
+
+const celda = (s: string) => {
+  const seguro = FORMULA.test(s) ? `'${s}` : s
+  return `"${seguro.replace(/"/g, '""')}"`
+}
+
 /** CSV con ";" y BOM para que Excel en español lo abra directamente. */
 export function exportarCSV(movs: Movimiento[], cats: Categoria[]) {
-  const esc = (s: string) => `"${s.replace(/"/g, '""')}"`
   const filas = [...movs]
     .sort((a, b) => a.fecha.localeCompare(b.fecha))
     .map((m) => {
       const c = cats.find((x) => x.id === m.categoriaId)
       const entra = m.clase === 'ingreso' || (m.clase === 'traspaso' && m.sentido === 'entrada')
       const importe = (entra ? m.importe : -m.importe).toFixed(2).replace('.', ',')
-      return [m.fecha, CLASE[m.clase], esc(c?.nombre ?? ''), esc(m.asunto), importe].join(';')
+      return [m.fecha, CLASE[m.clase], celda(c?.nombre ?? ''), celda(m.asunto), importe].join(';')
     })
   descargar('﻿' + ['Fecha;Tipo;Categoría;Asunto;Importe', ...filas].join('\r\n'), `movimientos-${today()}.csv`, 'text/csv')
 }
