@@ -487,3 +487,29 @@ dialog .sheet-body { padding: 20px 22px 22px; overflow-y: auto; }
 .pais-select { flex: 0 0 auto; max-width: 46%; padding: 11px 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-2); }
 .tx-amt.neutral { color: var(--muted); }
 .hero-ahorro { margin-top: 8px; background: rgba(255,255,255,.16); display: inline-block; padding: 4px 12px; border-radius: 99px; }
+
+/* ===== Avisos de caducidad del banco ===== */
+.avisos-banco { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.aviso-banco {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  padding: 14px 16px; border-radius: var(--radius); border: 1px solid; box-shadow: var(--shadow);
+}
+.aviso-banco.pronto { background: color-mix(in srgb, #fab219 14%, var(--surface)); border-color: color-mix(in srgb, #fab219 55%, transparent); }
+.aviso-banco.caducada { background: color-mix(in srgb, #d03b3b 12%, var(--surface)); border-color: color-mix(in srgb, #d03b3b 50%, transparent); }
+.aviso-texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 260px; }
+.aviso-texto span { color: var(--text-2); font-size: .88rem; }
+.aviso-acciones { display: flex; gap: 6px; }
+.banco-fechas { display: grid; grid-template-columns: repeat(3, auto); gap: 4px 18px; margin: 8px 0 4px; justify-content: start; }
+.banco-fechas div { display: flex; flex-direction: column; }
+.banco-fechas dt { font-size: .74rem; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; font-weight: 650; }
+.banco-fechas dd { margin: 0; font-size: .86rem; font-weight: 600; }
+.banco-vida { height: 5px; margin: 6px 0 0; max-width: 260px; }
+.banco-acciones { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+.banco-caducada { border-color: color-mix(in srgb, #d03b3b 45%, transparent); }
+.banco-pronto { border-color: color-mix(in srgb, #fab219 55%, transparent); }
+@media (max-width: 720px) {
+  .banco { flex-wrap: wrap; }
+  .banco-fechas { grid-template-columns: 1fr 1fr; }
+  .banco-acciones { flex-direction: row; width: 100%; }
+  .banco-acciones .btn { flex: 1; }
+}

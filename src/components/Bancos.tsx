@@ -3,6 +3,7 @@ import {
   conectarBanco,
   desconectarBanco,
   diasRestantes,
+  estadoConexion,
   listarBancos,
   sincronizarBancos,
   useBancos,
@@ -13,6 +14,7 @@ import { toast } from '../store/useToast'
 import { Sheet } from './Sheet'
 
 const fechaHora = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+const fechaCorta = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
 const ocultarIban = (iban?: string) => (iban ? `···· ${iban.slice(-4)}` : '')
 
 export function Bancos() {
@@ -73,7 +75,9 @@ export function Bancos() {
 
 function ConexionItem({ c }: { c: ConexionBanco }) {
   const dias = diasRestantes(c)
-  const caducado = dias < 0
+  const estado = estadoConexion(c)
+  const [renovando, setRenovando] = useState(false)
+
   const desconectar = async () => {
     if (!confirm(`¿Desconectar ${c.banco}? Los movimientos ya importados se conservan.`)) return
     try {
@@ -84,25 +88,58 @@ function ConexionItem({ c }: { c: ConexionBanco }) {
     }
   }
 
+  const renovar = async () => {
+    setRenovando(true)
+    try {
+      await conectarBanco(c.banco, c.pais)
+    } catch (e) {
+      setRenovando(false)
+      toast(`❌ ${(e as Error).message}`)
+    }
+  }
+
   return (
-    <li className="banco">
+    <li className={`banco banco-${estado}`}>
       {c.logo ? <img src={c.logo} alt="" className="banco-logo" /> : <span className="banco-logo">🏦</span>}
       <div className="banco-main">
         <strong>{c.banco}</strong>
         <span className="muted small">
           {c.cuentas.map((x) => x.nombre || ocultarIban(x.iban)).filter(Boolean).join(' · ') || `${c.cuentas.length} cuentas`}
         </span>
-        <span className="muted small">
-          {c.ultima_sync ? `Última sincronización: ${fechaHora.format(new Date(c.ultima_sync))}` : 'Pendiente de sincronizar'}
-        </span>
-        {caducado ? (
-          <span className="banco-aviso">⚠️ La autorización ha caducado: desconéctalo y vuelve a conectarlo.</span>
-        ) : dias <= 15 ? (
-          <span className="banco-aviso">⏳ La autorización caduca en {dias} días: tendrás que volver a conectarlo.</span>
-        ) : null}
-        {c.error && !caducado && <span className="banco-aviso">⚠️ {c.error}</span>}
+        <dl className="banco-fechas">
+          <div>
+            <dt>Conectado</dt>
+            <dd>{fechaCorta.format(new Date(c.created_at))}</dd>
+          </div>
+          <div>
+            <dt>{estado === 'caducada' ? 'Caducó' : 'Caduca'}</dt>
+            <dd>
+              {fechaCorta.format(new Date(c.valido_hasta))}
+              {estado !== 'caducada' && <span className="muted"> · {dias} días</span>}
+            </dd>
+          </div>
+          <div>
+            <dt>Última importación</dt>
+            <dd>{c.ultima_sync ? fechaHora.format(new Date(c.ultima_sync)) : 'Pendiente'}</dd>
+          </div>
+        </dl>
+        {estado === 'ok' && (
+          <div className="progress banco-vida" title={`Quedan ${dias} de 180 días`}>
+            <div className="progress-fill" style={{ width: `${Math.max(0, Math.min(1, dias / 180)) * 100}%` }} />
+          </div>
+        )}
+        {estado === 'caducada' && <span className="banco-aviso">⚠️ Se ha perdido el acceso: vuelve a conectarlo para seguir importando.</span>}
+        {estado === 'pronto' && <span className="banco-aviso">⏳ Renuévalo antes de que caduque para no perder movimientos.</span>}
+        {c.error && estado !== 'caducada' && <span className="banco-aviso">⚠️ {c.error}</span>}
       </div>
-      <button className="btn btn-ghost btn-danger" onClick={desconectar}>Desconectar</button>
+      <div className="banco-acciones">
+        {estado !== 'ok' && (
+          <button className="btn btn-primary" onClick={renovar} disabled={renovando}>
+            {renovando ? 'Abriendo…' : estado === 'caducada' ? 'Reconectar' : 'Renovar'}
+          </button>
+        )}
+        <button className="btn btn-ghost btn-danger" onClick={desconectar}>Desconectar</button>
+      </div>
     </li>
   )
 }

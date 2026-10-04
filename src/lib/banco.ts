@@ -17,6 +17,7 @@ export interface ConexionBanco {
   valido_hasta: string
   ultima_sync: string | null
   error: string | null
+  created_at: string
 }
 
 async function llamar<T>(ruta: string, body?: object): Promise<T> {
@@ -61,7 +62,18 @@ export const patronDe = (s: string) =>
     .replace(/\s+/g, ' ')
     .trim()
 
-export const diasRestantes = (c: ConexionBanco) => Math.floor((new Date(c.valido_hasta).getTime() - Date.now()) / 86_400_000)
+export const diasRestantes = (c: ConexionBanco) => Math.ceil((new Date(c.valido_hasta).getTime() - Date.now()) / 86_400_000)
+
+/** Días antes de caducar a partir de los que se avisa en toda la app. */
+export const DIAS_AVISO = 15
+
+export type EstadoConexion = 'ok' | 'pronto' | 'caducada'
+
+/** 'caducada' también si el banco ha rechazado el acceso antes de tiempo. */
+export function estadoConexion(c: ConexionBanco): EstadoConexion {
+  if (diasRestantes(c) < 0 || /caducado|vuelve a conectar/i.test(c.error ?? '')) return 'caducada'
+  return diasRestantes(c) <= DIAS_AVISO ? 'pronto' : 'ok'
+}
 
 /** Conexiones bancarias del usuario, actualizadas en tiempo real. */
 export function useBancos(activo = true) {
@@ -76,8 +88,9 @@ export function useBancos(activo = true) {
   useEffect(() => {
     if (!supabase || !activo) return
     void cargar()
+    // Nombre único: varios componentes pueden usar este hook a la vez
     const canal = supabase
-      .channel('bancos-cambios')
+      .channel(`bancos-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bancos' }, () => void cargar())
       .subscribe()
     return () => void supabase?.removeChannel(canal)

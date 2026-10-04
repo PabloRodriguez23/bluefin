@@ -12,6 +12,7 @@ import { Ajustes } from './views/Ajustes'
 import { TxDialog } from './components/TxDialog'
 import { FijoDialog } from './components/FijoDialog'
 import { SyncBadge } from './components/SyncBadge'
+import { AvisoBancos } from './components/AvisoBancos'
 import { Login } from './views/Login'
 import { toast } from './store/useToast'
 import { sincronizarBancos } from './lib/banco'
@@ -126,6 +127,8 @@ function Principal({ modo, email }: { modo: ReturnType<typeof useTheme>; email?:
           </div>
           <button className="btn btn-primary desktop-only" onClick={nuevo}>＋ Añadir</button>
         </header>
+
+        {email && <AvisoBancos onVerAjustes={() => ir('ajustes')} />}
 
         <section className="view" key={vista}>
           {vista === 'resumen' && (

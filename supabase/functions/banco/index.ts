@@ -189,7 +189,8 @@ async function sincronizarConexion(c: Conexion, psu?: Psu): Promise<number> {
         const fecha = tx.booking_date ?? tx.value_date ?? tx.transaction_date
         if (!fecha) continue
         const idBanco = tx.transaction_id || tx.entry_reference
-        const ref = `${cuenta.uid}:${idBanco ?? (await sha(JSON.stringify(tx))).slice(0, 32)}`
+        // El IBAN identifica la cuenta de forma estable; el uid cambia en cada conexión nueva
+        const ref = `${cuenta.iban || cuenta.uid}:${idBanco ?? (await sha(JSON.stringify(tx))).slice(0, 32)}`
         nuevas.push({ ref, tx })
       }
       continuation = r.continuation_key || undefined
@@ -369,6 +370,19 @@ Deno.serve(async (req) => {
         .select()
         .single()
       if (error) throw error
+
+      // Renovación: la conexión nueva sustituye a las anteriores del mismo banco
+      const { data: anteriores } = await db
+        .from('bancos')
+        .select('id, session_id')
+        .eq('user_id', auth.user_id)
+        .eq('banco', auth.banco)
+        .eq('pais', auth.pais)
+        .neq('id', conexion.id)
+      for (const a of anteriores ?? []) {
+        await eb(`/sessions/${a.session_id}`, { method: 'DELETE' }).catch(() => {})
+        await db.from('bancos').delete().eq('id', a.id)
+      }
 
       const r = await sincronizarYGuardar(conexion as Conexion, psuDe(req))
       volver.searchParams.set('banco', 'error' in r ? 'error' : 'ok')
