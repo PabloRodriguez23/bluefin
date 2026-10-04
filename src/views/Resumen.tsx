@@ -3,7 +3,7 @@ import type { Movimiento } from '../types'
 import { useFinanzas } from '../store/useFinanzas'
 import { acumuladoDiario, gastoPorCategoria, resumenMes, ultimosMeses } from '../lib/stats'
 import { money, pct } from '../lib/format'
-import { monthOf, today } from '../lib/dates'
+import { daysInMonth, monthOf, today } from '../lib/dates'
 import type { ModoColor } from '../lib/palette'
 import { CategoryDonut } from '../components/charts/CategoryDonut'
 import { AcumuladoChart } from '../components/charts/AcumuladoChart'
@@ -26,7 +26,7 @@ interface Props {
 export function Resumen({ month, modo, onMonth, onEdit, onVerTodos, onAdd }: Props) {
   const movimientos = useFinanzas((s) => s.movimientos)
   const categorias = useFinanzas((s) => s.categorias)
-  const presupuesto = useFinanzas((s) => s.presupuesto)
+  const colchon = useFinanzas((s) => s.colchon)
   const cargarDemo = useFinanzas((s) => s.cargarDemo)
 
   const r = useMemo(() => resumenMes(movimientos, month), [movimientos, month])
@@ -64,7 +64,10 @@ export function Resumen({ month, modo, onMonth, onEdit, onVerTodos, onAdd }: Pro
 
   // Solo se avisa si se gasta más de lo que entra; no se habla de ahorro
   const exceso = r.ingresos > 0 && r.balance < 0 ? -r.balance / r.ingresos : null
-  const usoPresupuesto = presupuesto ? r.variables / presupuesto : 0
+  // Lo que se puede gastar sin bajar del colchón: saldo real + lo previsto que queda − colchón
+  const disponible =
+    saldo && colchon !== null && esMesActual ? Math.round((saldo.total + r.previstoIngresos - r.previstoGastos - colchon) * 100) / 100 : null
+  const diasQuedan = daysInMonth(month) - Number(today().slice(8)) + 1
 
   return (
     <>
@@ -121,32 +124,35 @@ export function Resumen({ month, modo, onMonth, onEdit, onVerTodos, onAdd }: Pro
           <div className="tile-value">{money(r.variables)}</div>
           <div className="tile-sub">{r.gastos ? `${pct(r.variables / r.gastos)} del gasto` : '—'}</div>
         </div>
-        <div className="card tile tile-budget">
-          <div className="tile-label">🎯 Presupuesto variable</div>
-          {presupuesto ? (
+        <div className={`card tile tile-budget${disponible !== null && disponible < 0 ? ' tile-alerta' : ''}`}>
+          <div className="tile-label">🛟 Disponible para gastar</div>
+          {disponible !== null ? (
             <>
               <div className="tile-value">
-                {money(Math.max(presupuesto - r.variables, 0))} <span className="tile-of">libres</span>
-              </div>
-              <div
-                className={`progress${usoPresupuesto > 1 ? ' over' : usoPresupuesto > 0.8 ? ' warn' : ''}`}
-                role="progressbar"
-                aria-valuenow={Math.round(usoPresupuesto * 100)}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              >
-                <div className="progress-fill" style={{ width: `${Math.min(usoPresupuesto, 1) * 100}%` }} />
+                {disponible >= 0 ? money(disponible) : `−${money(-disponible)}`}
+                {disponible > 0 && diasQuedan > 1 && <span className="tile-of"> · {money(disponible / diasQuedan)}/día</span>}
               </div>
               <div className="tile-sub">
-                {usoPresupuesto > 1
-                  ? `⚠️ Te has pasado ${money(r.variables - presupuesto)}`
-                  : `${pct(usoPresupuesto)} usado de ${money(presupuesto)}`}
+                {disponible >= 0
+                  ? `Sin bajar de tu colchón de ${money(colchon!)}`
+                  : `⚠️ Estás ${money(-disponible)} por debajo de tu colchón`}
+              </div>
+              <div className="tile-desglose">
+                Saldo {money(saldo!.total)}
+                {r.previstoIngresos > 0 && <> + previsto {money(r.previstoIngresos)}</>}
+                {r.previstoGastos > 0 && <> − previsto {money(r.previstoGastos)}</>} − colchón {money(colchon!)}
               </div>
             </>
           ) : (
             <>
               <div className="tile-value">—</div>
-              <div className="tile-sub">Fíjalo en Ajustes</div>
+              <div className="tile-sub">
+                {!esMesActual
+                  ? 'Solo se calcula para el mes actual'
+                  : !saldo
+                    ? 'Conecta tu banco para calcularlo'
+                    : 'Define tu colchón en Ajustes'}
+              </div>
             </>
           )}
         </div>
@@ -159,7 +165,7 @@ export function Resumen({ month, modo, onMonth, onEdit, onVerTodos, onAdd }: Pro
         </div>
         <div className="card chart-card">
           <h2>Gasto variable acumulado</h2>
-          <AcumuladoChart data={acumulado} presupuesto={presupuesto} modo={modo} />
+          <AcumuladoChart data={acumulado} modo={modo} />
         </div>
       </div>
 

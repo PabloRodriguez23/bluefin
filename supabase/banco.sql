@@ -71,3 +71,13 @@ alter table public.movimientos add constraint movimientos_clase_check
   check (clase in ('fijo', 'variable', 'ingreso', 'traspaso'));
 alter table public.movimientos add column if not exists sentido text
   check (sentido in ('entrada', 'salida'));
+
+-- ===== El presupuesto mensual se sustituye por el colchón =====
+do $$
+begin
+  if exists (select 1 from information_schema.columns
+             where table_schema = 'public' and table_name = 'ajustes' and column_name = 'presupuesto') then
+    alter table public.ajustes rename column presupuesto to colchon;
+    update public.ajustes set colchon = null;
+  end if;
+end $$;

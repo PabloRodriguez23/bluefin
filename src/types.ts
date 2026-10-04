@@ -53,6 +53,6 @@ export interface DatosFinanzas {
   movimientos: Movimiento[]
   fijos: Fijo[]
   categorias: Categoria[]
-  /** Límite mensual para gastos variables. */
-  presupuesto: number | null
+  /** Dinero mínimo que se quiere mantener siempre en la cuenta. */
+  colchon: number | null
 }

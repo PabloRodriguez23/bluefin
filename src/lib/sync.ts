@@ -113,7 +113,9 @@ function guardarOutbox() {
 }
 function cargarOutbox() {
   try {
-    const ops = JSON.parse(localStorage.getItem(OUTBOX_KEY) ?? '[]') as Op[]
+    const ops = (JSON.parse(localStorage.getItem(OUTBOX_KEY) ?? '[]') as Op[])
+      // Cambios pendientes de versiones antiguas que guardaban un presupuesto: ya no existen
+      .filter((o) => !(o.tabla === 'ajustes' && o.row && 'presupuesto' in o.row))
     outbox = new Map(ops.map((o) => [keyOf(o.tabla, o.id), o]))
   } catch {
     outbox = new Map()
@@ -140,10 +142,10 @@ function encolarDiferencias(prev: DatosFinanzas, next: DatosFinanzas) {
   diffLista('movimientos', prev.movimientos, next.movimientos, movToRow)
   diffLista('fijos', prev.fijos, next.fijos, fijoToRow)
   diffLista('categorias', prev.categorias, next.categorias, catToRow, true)
-  if (prev.presupuesto !== next.presupuesto) encolar({ tabla: 'ajustes', id: 'ajustes', row: { presupuesto: next.presupuesto } })
+  if (prev.colchon !== next.colchon) encolar({ tabla: 'ajustes', id: 'ajustes', row: { colchon: next.colchon } })
 }
 
-const VACIO: DatosFinanzas = { movimientos: [], fijos: [], categorias: [], presupuesto: null }
+const VACIO: DatosFinanzas = { movimientos: [], fijos: [], categorias: [], colchon: null }
 
 // ===== Subida =====
 
@@ -238,7 +240,7 @@ async function descargar(): Promise<DatosFinanzas & { vacio: boolean }> {
     movimientos: (m.data ?? []).map(rowToMov),
     fijos: (f.data ?? []).map(rowToFijo),
     categorias: (c.data ?? []).map(rowToCat),
-    presupuesto: a.data?.presupuesto != null ? Number(a.data.presupuesto) : null,
+    colchon: a.data?.colchon != null ? Number(a.data.colchon) : null,
     vacio: !m.data?.length && !f.data?.length && !c.data?.length,
   }
 }
@@ -254,7 +256,7 @@ async function refrescar() {
         movimientos: d.movimientos,
         fijos: d.fijos,
         categorias: d.categorias.length ? d.categorias : DEFAULT_CATEGORIAS,
-        presupuesto: d.presupuesto,
+        colchon: d.colchon,
       }),
     )
   } catch (e) {
@@ -292,7 +294,7 @@ function onCambioRemoto(tabla: Tabla, p: RealtimePostgresChangesPayload<Row>) {
           return { categorias: [...lista].sort((a, b) => orden(a) - orden(b)) }
         }
         case 'ajustes':
-          return { presupuesto: borrar || nuevo.presupuesto == null ? null : Number(nuevo.presupuesto) }
+          return { colchon: borrar || nuevo.colchon == null ? null : Number(nuevo.colchon) }
       }
     }),
   )
@@ -322,7 +324,7 @@ function cargaInicial(): Promise<void> {
             movimientos: remoto.movimientos,
             fijos: remoto.fijos,
             categorias: remoto.categorias.length ? remoto.categorias : DEFAULT_CATEGORIAS,
-            presupuesto: remoto.presupuesto,
+            colchon: remoto.colchon,
           }),
         )
       }

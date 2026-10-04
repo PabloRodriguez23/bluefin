@@ -19,7 +19,7 @@ interface State extends DatosFinanzas {
   aplicarFijos: () => void
   addCategoria: (nombre: string, emoji: string) => void
   deleteCategoria: (id: string) => void
-  setPresupuesto: (n: number | null) => void
+  setColchon: (n: number | null) => void
   setTema: (t: Tema) => void
   importar: (d: DatosFinanzas) => void
   cargarDemo: () => void
@@ -30,7 +30,7 @@ const VACIO: DatosFinanzas = {
   movimientos: [],
   fijos: [],
   categorias: DEFAULT_CATEGORIAS,
-  presupuesto: null,
+  colchon: null,
 }
 
 /** Genera los movimientos pendientes de cada fijo activo, hasta `hasta` incluido. */
@@ -107,19 +107,31 @@ export const useFinanzas = create<State>()(
         })
       },
 
-      setPresupuesto: (presupuesto) => set({ presupuesto }),
+      setColchon: (colchon) => set({ colchon }),
       setTema: (tema) => set({ tema }),
       importar: (d) =>
         set({
           categorias: d.categorias?.length ? d.categorias : DEFAULT_CATEGORIAS,
-          presupuesto: d.presupuesto ?? null,
+          colchon: d.colchon ?? null,
           ...generarFijos(d.fijos ?? [], d.movimientos ?? []),
         }),
       cargarDemo: () => set(crearDemo()),
       borrarTodo: () => set({ ...VACIO }),
     }),
-    // Clave histórica del almacenamiento local: no cambiarla o se pierden los datos guardados
-    { name: 'mis-finanzas', version: 1 },
+    {
+      // Clave histórica del almacenamiento local: no cambiarla o se pierden los datos guardados
+      name: 'mis-finanzas',
+      version: 2,
+      // v1 → v2: el presupuesto mensual se sustituye por el colchón
+      migrate: (estado, version) => {
+        const s = estado as Record<string, unknown>
+        if (version < 2) {
+          delete s.presupuesto
+          s.colchon = null
+        }
+        return s as unknown as State
+      },
+    },
   ),
 )
 

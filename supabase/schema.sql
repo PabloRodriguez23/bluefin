@@ -43,7 +43,8 @@ create table if not exists public.fijos (
 
 create table if not exists public.ajustes (
   user_id uuid primary key default auth.uid() references auth.users on delete cascade,
-  presupuesto numeric(12, 2)
+  -- Dinero mínimo que se quiere mantener siempre en la cuenta
+  colchon numeric(12, 2)
 );
 
 -- ===== Seguridad: cada usuario solo ve y modifica sus propias filas =====

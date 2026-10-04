@@ -80,5 +80,5 @@ export function crearDemo(): DatosFinanzas {
     }
   }
 
-  return { movimientos, fijos, categorias: DEFAULT_CATEGORIAS, presupuesto: 450 }
+  return { movimientos, fijos, categorias: DEFAULT_CATEGORIAS, colchon: 250 }
 }

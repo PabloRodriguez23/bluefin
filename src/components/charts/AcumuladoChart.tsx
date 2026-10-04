@@ -1,4 +1,4 @@
-import { Area, AreaChart, CartesianGrid, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { money, moneyRound } from '../../lib/format'
 import { CHROME, SERIES, type ModoColor } from '../../lib/palette'
 import { ChartTooltip } from './ChartTooltip'
@@ -11,11 +11,10 @@ interface Punto {
 
 interface Props {
   data: Punto[]
-  presupuesto: number | null
   modo: ModoColor
 }
 
-export function AcumuladoChart({ data, presupuesto, modo }: Props) {
+export function AcumuladoChart({ data, modo }: Props) {
   const c = CHROME[modo]
   const s = SERIES[modo]
   const azul = modo === 'light' ? '#2a78d6' : '#3987e5'
@@ -25,7 +24,6 @@ export function AcumuladoChart({ data, presupuesto, modo }: Props) {
       <div className="mini-legend">
         <span><i className="sw" style={{ background: azul }} />Este mes</span>
         <span><i className="sw sw-dashed" style={{ borderColor: s.previo }} />Mes anterior</span>
-        {presupuesto ? <span><i className="sw sw-line" style={{ background: '#d03b3b' }} />Presupuesto</span> : null}
       </div>
       <div className="chart-box">
         <ResponsiveContainer width="100%" height="100%">
@@ -45,9 +43,6 @@ export function AcumuladoChart({ data, presupuesto, modo }: Props) {
               width={58}
               tickFormatter={(v: number) => moneyRound(v)}
             />
-            {presupuesto ? (
-              <ReferenceLine y={presupuesto} stroke="#d03b3b" strokeDasharray="0" strokeWidth={1.5} ifOverflow="extendDomain" />
-            ) : null}
             <Tooltip
               cursor={{ stroke: c.axis, strokeWidth: 1 }}
               content={({ active, payload }) => {
@@ -60,7 +55,6 @@ export function AcumuladoChart({ data, presupuesto, modo }: Props) {
                   <ChartTooltip
                     title={`Día ${p.dia}`}
                     rows={rows}
-                    footer={presupuesto && p.actual !== null ? `Quedan ${money(presupuesto - p.actual)} del presupuesto` : undefined}
                   />
                 )
               }}

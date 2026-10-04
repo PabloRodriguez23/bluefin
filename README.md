@@ -8,9 +8,10 @@ Aplicación web progresiva (PWA) para controlar las finanzas personales: gastos 
 - **Gastos fijos automáticos**: alquiler, suscripciones, nómina… se apuntan solos cada mes. Se pueden pausar, editar o eliminar sin perder el historial.
 - **Panel visual**:
   - Balance del mes y porcentaje de ahorro
-  - Reparto fijos / variables y presupuesto mensual con barra de progreso
+  - Saldo real de las cuentas conectadas y **dinero disponible para gastar** sin bajar de un colchón mínimo
+  - Reparto entre gastos fijos y variables; los movimientos futuros se muestran como previstos
   - Donut de gasto por categoría
-  - Gasto variable acumulado comparado con el mes anterior y con el presupuesto
+  - Gasto variable acumulado comparado con el mes anterior
   - Evolución de los últimos 6 meses (toca una barra para ir a ese mes)
 - **Movimientos**: agrupados por día, con búsqueda (sin tener en cuenta tildes) y filtros.
 - **Categorías personalizables** con emoji y colores coherentes en todas las gráficas.

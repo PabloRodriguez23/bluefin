@@ -519,3 +519,8 @@ dialog .sheet-body { padding: 20px 22px 22px; overflow-y: auto; }
 .hero-previsto { margin-top: 6px; font-size: .88rem; }
 .badge-previsto { background: color-mix(in srgb, #fab219 22%, transparent) !important; color: #8a5a00 !important; }
 :root[data-theme="dark"] .badge-previsto { color: #fab219 !important; }
+
+/* ===== Colchón ===== */
+.tile-desglose { font-size: .76rem; color: var(--muted); margin-top: 6px; line-height: 1.35; }
+.tile-alerta { border-color: color-mix(in srgb, #d03b3b 45%, transparent); }
+.tile-alerta .tile-value { color: var(--bad); }

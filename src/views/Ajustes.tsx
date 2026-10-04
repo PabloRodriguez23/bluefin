@@ -12,14 +12,14 @@ import { Bancos } from '../components/Bancos'
 
 export function Ajustes({ modo, email }: { modo: ModoColor; email?: string }) {
   const s = useFinanzas()
-  const [presu, setPresu] = useState(s.presupuesto ? String(s.presupuesto) : '')
+  const [colchon, setColchon] = useState(s.colchon !== null ? String(s.colchon) : '')
   const [emoji, setEmoji] = useState('')
   const [nombre, setNombre] = useState('')
 
-  const guardarPresu = () => {
-    const n = parseAmount(presu)
-    s.setPresupuesto(n > 0 ? n : null)
-    toast(n > 0 ? 'Presupuesto guardado' : 'Presupuesto quitado')
+  const guardarColchon = () => {
+    const n = parseAmount(colchon)
+    s.setColchon(n >= 0 && colchon.trim() ? n : null)
+    toast(n >= 0 && colchon.trim() ? 'Colchón guardado' : 'Colchón quitado')
   }
 
   const nuevaCat = (e: FormEvent) => {
@@ -45,7 +45,7 @@ export function Ajustes({ modo, email }: { modo: ModoColor; email?: string }) {
     }
   }
 
-  const datos = { movimientos: s.movimientos, fijos: s.fijos, categorias: s.categorias, presupuesto: s.presupuesto }
+  const datos = { movimientos: s.movimientos, fijos: s.fijos, categorias: s.categorias, colchon: s.colchon }
 
   return (
     <>
@@ -74,19 +74,21 @@ export function Ajustes({ modo, email }: { modo: ModoColor; email?: string }) {
       {email && <Bancos />}
 
       <div className="card">
-        <h2>🎯 Presupuesto mensual</h2>
-        <p className="muted small">Límite para tus gastos variables. Te avisaremos en el resumen cuando te acerques.</p>
+        <h2>🛟 Colchón</h2>
+        <p className="muted small">
+          Dinero que quieres tener siempre en la cuenta. El resumen te dirá cuánto puedes gastar este mes sin bajar de esa cifra.
+        </p>
         <div className="inline-form">
           <input
             type="text"
             inputMode="decimal"
-            placeholder="Ej. 400"
-            value={presu}
-            onChange={(e) => setPresu(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && guardarPresu()}
-            aria-label="Presupuesto en euros"
+            placeholder="Ej. 250"
+            value={colchon}
+            onChange={(e) => setColchon(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && guardarColchon()}
+            aria-label="Colchón en euros"
           />
-          <button className="btn btn-primary" onClick={guardarPresu}>Guardar</button>
+          <button className="btn btn-primary" onClick={guardarColchon}>Guardar</button>
         </div>
       </div>
 
