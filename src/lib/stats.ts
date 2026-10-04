@@ -1,6 +1,6 @@
 import type { Categoria, Movimiento } from '../types'
 import { AHORRO } from './categories'
-import { addMonths, daysInMonth, monthOf, shortMonthLabel } from './dates'
+import { addMonths, daysInMonth, monthOf, shortMonthLabel, today } from './dates'
 
 export interface ResumenMes {
   ingresos: number
@@ -10,6 +10,9 @@ export interface ResumenMes {
   balance: number
   /** Neto enviado a la cuenta de ahorro (negativo si se sacó dinero). */
   apartado: number
+  /** Movimientos con fecha futura (p. ej. fijos que aún no han llegado): no cuentan en los totales. */
+  previstoIngresos: number
+  previstoGastos: number
 }
 
 /** +1 ingreso, -1 gasto, 0 traspaso (no cuenta en el balance). */
@@ -17,13 +20,21 @@ export const signo = (m: Movimiento) => (m.clase === 'ingreso' ? 1 : m.clase ===
 
 const r2 = (n: number) => Math.round(n * 100) / 100
 
-export function resumenMes(movs: Movimiento[], month: string): ResumenMes {
+/** Solo cuenta lo que ya ha ocurrido: lo de fecha futura se acumula aparte como previsto. */
+export function resumenMes(movs: Movimiento[], month: string, hoy = today()): ResumenMes {
   let ingresos = 0
   let fijos = 0
   let variables = 0
   let apartado = 0
+  let previstoIngresos = 0
+  let previstoGastos = 0
   for (const m of movs) {
     if (monthOf(m.fecha) !== month) continue
+    if (m.fecha > hoy) {
+      if (m.clase === 'ingreso') previstoIngresos += m.importe
+      else if (m.clase !== 'traspaso') previstoGastos += m.importe
+      continue
+    }
     if (m.clase === 'traspaso') {
       if (m.categoriaId === AHORRO) apartado += m.sentido === 'entrada' ? -m.importe : m.importe
     } else if (m.clase === 'ingreso') ingresos += m.importe
@@ -31,7 +42,7 @@ export function resumenMes(movs: Movimiento[], month: string): ResumenMes {
     else variables += m.importe
   }
   const gastos = fijos + variables
-  return { ingresos: r2(ingresos), fijos: r2(fijos), variables: r2(variables), gastos: r2(gastos), balance: r2(ingresos - gastos), apartado: r2(apartado) }
+  return { ingresos: r2(ingresos), fijos: r2(fijos), variables: r2(variables), gastos: r2(gastos), balance: r2(ingresos - gastos), apartado: r2(apartado), previstoIngresos: r2(previstoIngresos), previstoGastos: r2(previstoGastos) }
 }
 
 export interface PorCategoria {
@@ -43,10 +54,10 @@ export interface PorCategoria {
 }
 
 /** Gasto por categoría, de mayor a menor. Las categorías sin color se agrupan en "Otras". */
-export function gastoPorCategoria(movs: Movimiento[], cats: Categoria[], month: string): PorCategoria[] {
+export function gastoPorCategoria(movs: Movimiento[], cats: Categoria[], month: string, hoy = today()): PorCategoria[] {
   const totals = new Map<string, number>()
   for (const m of movs) {
-    if (m.clase === 'ingreso' || m.clase === 'traspaso' || monthOf(m.fecha) !== month) continue
+    if (m.clase === 'ingreso' || m.clase === 'traspaso' || monthOf(m.fecha) !== month || m.fecha > hoy) continue
     totals.set(m.categoriaId, (totals.get(m.categoriaId) ?? 0) + m.importe)
   }
   const out: PorCategoria[] = []

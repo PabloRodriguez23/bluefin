@@ -513,3 +513,11 @@ dialog .sheet-body { padding: 20px 22px 22px; overflow-y: auto; }
   .banco-acciones { flex-direction: row; width: 100%; }
   .banco-acciones .btn { flex: 1; }
 }
+
+/* ===== Saldo real y previstos ===== */
+.hero-cuentas { opacity: .85; font-size: .85rem; margin-bottom: 6px; }
+.hero-nota { opacity: .75; font-size: .82rem; }
+.hero-previsto { margin-top: 6px; font-size: .88rem; }
+.hero-previsto + .hero-ahorro, .hero-sub + .hero-ahorro { display: inline-block; }
+.badge-previsto { background: color-mix(in srgb, #fab219 22%, transparent) !important; color: #8a5a00 !important; }
+:root[data-theme="dark"] .badge-previsto { color: #fab219 !important; }

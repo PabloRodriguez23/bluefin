@@ -13,7 +13,7 @@ export interface ConexionBanco {
   banco: string
   pais: string
   logo: string | null
-  cuentas: { uid: string; iban?: string; nombre?: string }[]
+  cuentas: { uid: string; iban?: string; nombre?: string; saldo?: number; moneda?: string; saldo_fecha?: string }[]
   valido_hasta: string
   ultima_sync: string | null
   error: string | null
@@ -63,6 +63,22 @@ export const patronDe = (s: string) =>
     .trim()
 
 export const diasRestantes = (c: ConexionBanco) => Math.ceil((new Date(c.valido_hasta).getTime() - Date.now()) / 86_400_000)
+
+/** Saldo real de las cuentas conectadas (en euros), según el último dato del banco. */
+export function saldoReal(conexiones: ConexionBanco[] | null) {
+  const cuentas = (conexiones ?? []).flatMap((c) =>
+    c.cuentas
+      .filter((x) => typeof x.saldo === 'number' && (x.moneda ?? 'EUR') === 'EUR')
+      .map((x) => ({ banco: c.banco, saldo: x.saldo!, fecha: x.saldo_fecha })),
+  )
+  if (!cuentas.length) return null
+  const fechas = cuentas.map((x) => x.fecha).filter(Boolean) as string[]
+  return {
+    total: Math.round(cuentas.reduce((a, x) => a + x.saldo, 0) * 100) / 100,
+    cuentas,
+    actualizado: fechas.sort().at(0) ?? null,
+  }
+}
 
 /** Días antes de caducar a partir de los que se avisa en toda la app. */
 export const DIAS_AVISO = 15

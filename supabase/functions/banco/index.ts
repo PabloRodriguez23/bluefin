@@ -141,7 +141,7 @@ interface Conexion {
   id: string
   user_id: string
   session_id: string
-  cuentas: { uid: string; iban?: string; nombre?: string }[]
+  cuentas: { uid: string; iban?: string; nombre?: string; saldo?: number; moneda?: string; saldo_fecha?: string }[]
   ultima_sync: string | null
 }
 
@@ -290,10 +290,47 @@ async function sincronizarConexion(c: Conexion, psu?: Psu): Promise<number> {
   return pendientes.length
 }
 
+interface SaldoEB {
+  balance_amount: { amount: string; currency: string }
+  balance_type?: string
+  reference_date?: string
+}
+
+/** Preferencia de tipos de saldo: disponible > contable (ISO 20022). */
+const TIPOS_SALDO = ['CLAV', 'ITAV', 'XPCD', 'ITBD', 'CLBD', 'OPBD']
+
+/** Saldo actual de cada cuenta. Si el banco no lo da, se conserva el último conocido. */
+async function obtenerSaldos(c: Conexion, psu?: Psu): Promise<Conexion['cuentas']> {
+  const cuentas = []
+  for (const cuenta of c.cuentas) {
+    try {
+      const { balances } = await eb<{ balances: SaldoEB[] }>(`/accounts/${cuenta.uid}/balances`, {}, psu)
+      const elegido = [...(balances ?? [])].sort(
+        (a, b) => (TIPOS_SALDO.indexOf(a.balance_type ?? '') + 99) % 99 - (TIPOS_SALDO.indexOf(b.balance_type ?? '') + 99) % 99,
+      )[0]
+      cuentas.push(
+        elegido
+          ? {
+              ...cuenta,
+              saldo: Number(elegido.balance_amount.amount),
+              moneda: elegido.balance_amount.currency,
+              saldo_fecha: new Date().toISOString(),
+            }
+          : cuenta,
+      )
+    } catch (e) {
+      console.error('[banco] no se pudo leer el saldo', cuenta.uid, e)
+      cuentas.push(cuenta)
+    }
+  }
+  return cuentas
+}
+
 async function sincronizarYGuardar(c: Conexion, psu?: Psu) {
   try {
     const n = await sincronizarConexion(c, psu)
-    await db.from('bancos').update({ ultima_sync: new Date().toISOString(), error: null }).eq('id', c.id)
+    const cuentas = await obtenerSaldos(c, psu)
+    await db.from('bancos').update({ ultima_sync: new Date().toISOString(), error: null, cuentas }).eq('id', c.id)
     return { id: c.id, nuevos: n }
   } catch (e) {
     let msg = e instanceof Error ? e.message : String(e)

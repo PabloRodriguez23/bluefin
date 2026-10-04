@@ -4,6 +4,7 @@ import { money } from '../lib/format'
 import { slotColor, type ModoColor } from '../lib/palette'
 
 import { AHORRO } from '../lib/categories'
+import { today } from '../lib/dates'
 
 const ETIQUETA = { fijo: 'Fijo', variable: 'Variable', ingreso: 'Ingreso', traspaso: 'Traspaso' } as const
 
@@ -36,6 +37,7 @@ export function TxItem({ mov, modo, onClick, showDate }: Props) {
             {nombreCat}
             {mov.fijoId && <span title="Generado automáticamente">· 🔁</span>}
             {mov.origen === 'banco' && <span title={mov.comercio ? `Del banco: ${mov.comercio}` : 'Importado del banco'}>· 🏦</span>}
+            {mov.fecha > today() && <span className="badge badge-previsto" title="Aún no ha ocurrido: no cuenta en los totales">Previsto</span>}
             {showDate && <span>· {mov.fecha.slice(8)}/{mov.fecha.slice(5, 7)}</span>}
           </span>
         </span>

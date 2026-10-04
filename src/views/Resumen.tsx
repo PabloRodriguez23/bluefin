@@ -9,6 +9,10 @@ import { CategoryDonut } from '../components/charts/CategoryDonut'
 import { AcumuladoChart } from '../components/charts/AcumuladoChart'
 import { MesesChart } from '../components/charts/MesesChart'
 import { TxItem } from '../components/TxItem'
+import { saldoReal, useBancos } from '../lib/banco'
+import { currentMonth } from '../lib/dates'
+
+const hora = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 
 interface Props {
   month: string
@@ -26,6 +30,9 @@ export function Resumen({ month, modo, onMonth, onEdit, onVerTodos, onAdd }: Pro
   const cargarDemo = useFinanzas((s) => s.cargarDemo)
 
   const r = useMemo(() => resumenMes(movimientos, month), [movimientos, month])
+  const { conexiones } = useBancos()
+  const saldo = saldoReal(conexiones)
+  const esMesActual = month === currentMonth()
   const cats = useMemo(() => gastoPorCategoria(movimientos, categorias, month), [movimientos, categorias, month])
   const acumulado = useMemo(() => acumuladoDiario(movimientos, month, today()), [movimientos, month])
   const meses = useMemo(() => ultimosMeses(movimientos, month), [movimientos, month])
@@ -62,8 +69,25 @@ export function Resumen({ month, modo, onMonth, onEdit, onVerTodos, onAdd }: Pro
     <>
       <div className="hero card">
         <div>
-          <div className="hero-label">Balance del mes</div>
-          <div className="hero-value">{money(r.balance)}</div>
+          {saldo && esMesActual ? (
+            <>
+              <div className="hero-label">Dinero en tus cuentas</div>
+              <div className="hero-value">{money(saldo.total)}</div>
+              <div className="hero-sub hero-cuentas">
+                {saldo.cuentas.map((c) => `${c.banco} ${money(c.saldo)}`).join(' · ')}
+                {saldo.actualizado && ` · actualizado ${hora.format(new Date(saldo.actualizado))}`}
+              </div>
+              <div className="hero-sub">
+                Resultado del mes: <strong>{money(r.balance)}</strong> <span className="hero-nota">(ingresos − gastos hasta hoy)</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="hero-label">Resultado del mes</div>
+              <div className="hero-value">{money(r.balance)}</div>
+              <div className="hero-sub hero-nota">Ingresos menos gastos{esMesActual ? ' hasta hoy' : ''}</div>
+            </>
+          )}
           <div className="hero-sub">
             {ahorro === null
               ? 'Sin ingresos registrados este mes'
@@ -71,6 +95,13 @@ export function Resumen({ month, modo, onMonth, onEdit, onVerTodos, onAdd }: Pro
                 ? `Estás ahorrando el ${pct(ahorro)} de tus ingresos 🎉`
                 : `Has gastado un ${pct(-ahorro)} más de lo que ingresaste`}
           </div>
+          {(r.previstoIngresos > 0 || r.previstoGastos > 0) && (
+            <div className="hero-sub hero-previsto">
+              📅 Previsto hasta fin de mes:
+              {r.previstoIngresos > 0 && <> +{money(r.previstoIngresos)}</>}
+              {r.previstoGastos > 0 && <> −{money(r.previstoGastos)}</>}
+            </div>
+          )}
           {r.apartado !== 0 && (
             <div className="hero-sub hero-ahorro">
               🐷 {r.apartado > 0 ? `Has apartado ${money(r.apartado)} a tu ahorro` : `Has sacado ${money(-r.apartado)} de tu ahorro`}
