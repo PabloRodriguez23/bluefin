@@ -85,3 +85,9 @@ src/
 └── types.ts         # Modelo de datos
 supabase/schema.sql  # Tablas, políticas RLS y Realtime
 ```
+
+## Licencia
+
+Copyright (c) 2026 Pablo Rodríguez. Todos los derechos reservados.
+
+El código se publica únicamente para que pueda consultarse con fines de evaluación. No está permitido copiarlo, modificarlo, distribuirlo ni desplegarlo sin permiso previo y por escrito del autor. Consulta el archivo [LICENSE](LICENSE).
