@@ -1,0 +1,5 @@
+project_id = "mis-finanzas"
+
+# La vuelta desde el banco no lleva sesión de usuario: la función valida el token ella misma
+[functions.banco]
+verify_jwt = false
