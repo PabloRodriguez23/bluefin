@@ -96,7 +96,7 @@ function Principal({ modo, email }: { modo: ReturnType<typeof useTheme>; email?:
       <nav className="nav" aria-label="Secciones">
         <div className="brand">
           <img src={`${import.meta.env.BASE_URL}icons/icon.svg`} alt="" width={36} height={36} />
-          <span>Mis Finanzas</span>
+          <span>Bluefin</span>
         </div>
         <div className="nav-sync">
           <SyncBadge />

@@ -118,6 +118,7 @@ export const useFinanzas = create<State>()(
       cargarDemo: () => set(crearDemo()),
       borrarTodo: () => set({ ...VACIO }),
     }),
+    // Clave histórica del almacenamiento local: no cambiarla o se pierden los datos guardados
     { name: 'mis-finanzas', version: 1 },
   ),
 )

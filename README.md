@@ -1,8 +1,8 @@
-# 💙 Mis Finanzas
+# Bluefin
 
 Aplicación web progresiva (PWA) para controlar las finanzas personales: gastos fijos, gastos variables e ingresos, con gráficas claras y una interfaz pensada para apuntar un gasto en segundos. Se puede instalar en el móvil y en el ordenador y funciona sin conexión.
 
-## ✨ Funcionalidades
+## Funcionalidades
 
 - **Añadir en segundos**: botón central ＋, importe, categoría con un toque, asunto opcional para justificar el gasto (con autocompletado) y fecha.
 - **Gastos fijos automáticos**: alquiler, suscripciones, nómina… se apuntan solos cada mes. Se pueden pausar, editar o eliminar sin perder el historial.
@@ -20,7 +20,7 @@ Aplicación web progresiva (PWA) para controlar las finanzas personales: gastos 
 - **Importación automática del banco** (Open Banking PSD2 vía Enable Banking): los movimientos de tus cuentas y tarjetas se importan cada 6 horas, se categorizan solos (reglas aprendidas, más de 150 comercios españoles y códigos MCC) y se concilian con tus gastos fijos para no duplicarlos.
 - **Seguridad**: Row Level Security en PostgreSQL, así cada usuario solo puede leer y modificar sus propios datos.
 
-## 🛠️ Tecnologías
+## Tecnologías
 
 | | |
 |---|---|
@@ -33,7 +33,7 @@ Aplicación web progresiva (PWA) para controlar las finanzas personales: gastos 
 | **vite-plugin-pwa** (Workbox) | App instalable y uso sin conexión |
 | **CSS moderno** | Variables de diseño, `color-mix`, modo oscuro y diseño responsive *mobile first* |
 
-## ☁️ Configurar Supabase (sincronización)
+## Configurar Supabase (sincronización)
 
 1. Crea un proyecto gratis en [supabase.com](https://supabase.com).
 2. En **SQL Editor**, pega el contenido de [`supabase/schema.sql`](supabase/schema.sql) y pulsa **Run**.
@@ -50,7 +50,7 @@ Sin `.env.local`, la app funciona en modo local (solo en ese navegador).
 - Supabase Realtime envía los cambios de otros dispositivos, que se aplican en local.
 - Los movimientos que generan los gastos fijos usan un id determinista (`fijo_mes`), así que dos dispositivos nunca los duplican.
 
-## 🏦 Conexión bancaria (opcional)
+## Conexión bancaria (opcional)
 
 1. Ejecuta [`supabase/banco.sql`](supabase/banco.sql) en el SQL Editor.
 2. Crea una aplicación en el [Control Panel de Enable Banking](https://enablebanking.com/cp/applications) (modo *restricted production*, gratis con tus propias cuentas) con la URL de retorno `https://<PROYECTO>.supabase.co/functions/v1/banco/callback`.
@@ -61,7 +61,7 @@ Sin `.env.local`, la app funciona en modo local (solo en ese navegador).
    ```
 4. Programa la sincronización con [`supabase/cron.example.sql`](supabase/cron.example.sql).
 
-## 🚀 Puesta en marcha
+## Puesta en marcha
 
 ```bash
 npm install
@@ -72,7 +72,7 @@ npm run preview    # sirve el build localmente
 
 Para probarla en el móvil durante el desarrollo, `npm run dev -- --host` y abre la dirección *Network* desde el móvil (misma red Wi-Fi).
 
-## 📁 Estructura
+## Estructura
 
 ```
 src/

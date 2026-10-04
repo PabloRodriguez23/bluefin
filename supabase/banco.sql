@@ -1,4 +1,4 @@
--- Mis Finanzas · conexión bancaria (Open Banking con Enable Banking)
+-- Bluefin · conexión bancaria (Open Banking con Enable Banking)
 -- Ejecútalo una vez en: Supabase → SQL Editor → New query → Run (después de schema.sql)
 
 -- ===== Movimientos: saber cuáles vienen del banco =====

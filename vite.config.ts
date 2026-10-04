@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// BASE permite publicar en una subruta, p. ej. GitHub Pages: BASE=/mis-finanzas/
+// BASE permite publicar en una subruta, p. ej. GitHub Pages: BASE=/bluefin/
 const base = process.env.BASE ?? '/'
 
 export default defineConfig({
@@ -15,8 +15,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/icon.svg', 'icons/icon-192.png'],
       manifest: {
-        name: 'Mis Finanzas',
-        short_name: 'Finanzas',
+        name: 'Bluefin',
+        short_name: 'Bluefin',
         description: 'Controla tus gastos fijos, variables e ingresos de forma sencilla y visual.',
         lang: 'es',
         theme_color: '#1c5cab',

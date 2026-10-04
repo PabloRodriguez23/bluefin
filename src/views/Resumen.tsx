@@ -42,7 +42,7 @@ export function Resumen({ month, modo, onMonth, onEdit, onVerTodos, onAdd }: Pro
     return (
       <div className="card welcome">
         <div className="welcome-emoji">💙</div>
-        <h2>¡Bienvenido a Mis Finanzas!</h2>
+        <h2>¡Bienvenido a Bluefin!</h2>
         <p className="muted">
           Apunta tus gastos en segundos y mira de un vistazo a dónde va tu dinero. Empieza añadiendo tu primer
           movimiento o carga unos datos de ejemplo para explorar.

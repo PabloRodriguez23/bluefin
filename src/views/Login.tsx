@@ -46,7 +46,7 @@ export function Login() {
     <div className="login">
       <form className="card login-card" onSubmit={enviar}>
         <img src={`${import.meta.env.BASE_URL}icons/icon.svg`} alt="" width={64} height={64} className="login-logo" />
-        <h1>Mis Finanzas</h1>
+        <h1>Bluefin</h1>
         <p className="muted">
           {modo === 'entrar'
             ? 'Entra para ver tus finanzas en todos tus dispositivos.'

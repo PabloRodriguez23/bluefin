@@ -11,7 +11,7 @@ function descargar(contenido: string, nombre: string, tipo: string) {
 }
 
 export function exportarJSON(d: DatosFinanzas) {
-  descargar(JSON.stringify({ app: 'mis-finanzas', version: 1, ...d }, null, 2), `finanzas-${today()}.json`, 'application/json')
+  descargar(JSON.stringify({ app: 'bluefin', version: 1, ...d }, null, 2), `bluefin-${today()}.json`, 'application/json')
 }
 
 const CLASE = { fijo: 'Gasto fijo', variable: 'Gasto variable', ingreso: 'Ingreso', traspaso: 'Traspaso' } as const
@@ -34,7 +34,7 @@ export function exportarCSV(movs: Movimiento[], cats: Categoria[]) {
       const importe = (entra ? m.importe : -m.importe).toFixed(2).replace('.', ',')
       return [m.fecha, CLASE[m.clase], celda(c?.nombre ?? ''), celda(m.asunto), importe].join(';')
     })
-  descargar('﻿' + ['Fecha;Tipo;Categoría;Asunto;Importe', ...filas].join('\r\n'), `movimientos-${today()}.csv`, 'text/csv')
+  descargar('﻿' + ['Fecha;Tipo;Categoría;Asunto;Importe', ...filas].join('\r\n'), `bluefin-movimientos-${today()}.csv`, 'text/csv')
 }
 
 export async function leerJSON(file: File): Promise<DatosFinanzas> {

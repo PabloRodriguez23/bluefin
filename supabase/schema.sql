@@ -1,4 +1,4 @@
--- Mis Finanzas · esquema de base de datos para Supabase
+-- Bluefin · esquema de base de datos para Supabase
 -- Ejecútalo una vez en: Supabase → SQL Editor → New query → Run
 
 -- ===== Tablas =====

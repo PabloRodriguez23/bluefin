@@ -1,4 +1,4 @@
-project_id = "mis-finanzas"
+project_id = "bluefin"
 
 # La vuelta desde el banco no lleva sesión de usuario: la función valida el token ella misma
 [functions.banco]
